@@ -1,6 +1,6 @@
 package com.runfit.domain.auth.service;
 
-import com.runfit.domain.auth.Entity.BlacklistToken;
+import com.runfit.domain.auth.entity.BlacklistToken;
 import com.runfit.domain.auth.repository.BlacklistTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

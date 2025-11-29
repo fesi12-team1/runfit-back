@@ -1,4 +1,4 @@
-package com.runfit.domain.auth.Entity;
+package com.runfit.domain.auth.entity;
 
 import com.runfit.common.model.BaseEntity;
 import jakarta.persistence.Column;

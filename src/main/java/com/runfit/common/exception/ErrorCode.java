@@ -29,7 +29,16 @@ public enum ErrorCode {
     MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "크루 멤버십을 찾을 수 없습니다."),
     MEMBERSHIP_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 해당 크루에 가입되어 있습니다."),
     CREW_ROLE_FORBIDDEN(HttpStatus.FORBIDDEN, "크루 역할 변경 권한이 없습니다."),
-    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "크루장은 탈퇴 전에 리더 권한을 위임해야 합니다.");
+    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "크루장은 탈퇴 전에 리더 권한을 위임해야 합니다."),
+
+    // Session
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "세션을 찾을 수 없습니다."),
+    SESSION_FULL(HttpStatus.BAD_REQUEST, "세션 정원이 모두 찼습니다."),
+    SESSION_CLOSED(HttpStatus.BAD_REQUEST, "세션 신청이 마감되었습니다."),
+    ALREADY_JOINED_SESSION(HttpStatus.BAD_REQUEST, "이미 세션에 참여한 사용자입니다."),
+    NOT_SESSION_PARTICIPANT(HttpStatus.BAD_REQUEST, "세션에 참여하지 않은 사용자입니다."),
+    ALREADY_LIKED_SESSION(HttpStatus.BAD_REQUEST, "이미 찜한 세션입니다."),
+    SESSION_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜한 세션을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

@@ -48,6 +48,11 @@ public class SecurityConfig {
         "/api/crews/{crewId}/members/{userId}/role",
     };
 
+    private final String[] sessionPublicUrl = {
+        "/api/sessions",
+        "/api/sessions/{sessionId}",
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -64,6 +69,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, readOnlyPublicUrl).permitAll()
                     .requestMatchers(HttpMethod.GET, crewPublicUrl).permitAll()
+                    .requestMatchers(HttpMethod.GET, sessionPublicUrl).permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/signup", "/auth/signin").permitAll()
                     .anyRequest().authenticated())
             .exceptionHandling(exception ->

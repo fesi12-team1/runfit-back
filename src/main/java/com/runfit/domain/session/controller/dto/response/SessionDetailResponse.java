@@ -1,0 +1,44 @@
+package com.runfit.domain.session.controller.dto.response;
+
+import com.runfit.domain.session.entity.Session;
+import com.runfit.domain.session.entity.SessionLevel;
+import com.runfit.domain.session.entity.SessionStatus;
+import java.time.LocalDateTime;
+
+public record SessionDetailResponse(
+    Long id,
+    Long crewId,
+    Long hostUserId,
+    String name,
+    String description,
+    String image,
+    String location,
+    LocalDateTime sessionAt,
+    LocalDateTime registerBy,
+    SessionLevel level,
+    SessionStatus status,
+    Integer pace,
+    Integer maxParticipantCount,
+    Long currentParticipantCount,
+    Boolean liked
+) {
+    public static SessionDetailResponse from(Session session, long currentParticipantCount, boolean liked) {
+        return new SessionDetailResponse(
+            session.getId(),
+            session.getCrew().getId(),
+            session.getHostUser().getUserId(),
+            session.getName(),
+            session.getDescription(),
+            session.getImage(),
+            session.getLocation(),
+            session.getSessionAt(),
+            session.getRegisterBy(),
+            session.getLevel(),
+            session.getStatus(),
+            session.getPace(),
+            session.getMaxParticipantCount(),
+            currentParticipantCount,
+            liked
+        );
+    }
+}

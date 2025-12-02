@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import com.runfit.common.exception.BusinessException;
 import com.runfit.common.exception.ErrorCode;
 import com.runfit.domain.crew.entity.Crew;
+import com.runfit.domain.crew.repository.CrewRepository;
+import com.runfit.domain.review.controller.dto.response.CrewReviewResponse;
 import com.runfit.domain.review.controller.dto.request.ReviewCreateRequest;
 import com.runfit.domain.review.controller.dto.response.ReviewDeleteResponse;
 import com.runfit.domain.review.controller.dto.response.ReviewResponse;
@@ -21,7 +23,11 @@ import com.runfit.domain.session.repository.SessionRepository;
 import com.runfit.domain.user.entity.User;
 import com.runfit.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,6 +55,9 @@ class ReviewServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private CrewRepository crewRepository;
 
     private User user;
     private User otherUser;
@@ -216,6 +225,70 @@ class ReviewServiceTest {
             assertThatThrownBy(() -> reviewService.deleteReview(2L, 1L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REVIEW_FORBIDDEN);
+        }
+    }
+
+    @Nested
+    @DisplayName("크루 리뷰 목록 조회")
+    class GetCrewReviews {
+
+        @Test
+        @DisplayName("성공")
+        void success() {
+            // given
+            PageRequest pageable = PageRequest.of(0, 10);
+            CrewReviewResponse reviewResponse = new CrewReviewResponse(
+                1L, 1L, "테스트 세션", 1L, 1L, "테스트유저", null,
+                "좋았습니다!", 5, null, LocalDateTime.now()
+            );
+            Page<CrewReviewResponse> reviewPage = new PageImpl<>(
+                List.of(reviewResponse), pageable, 1
+            );
+
+            given(crewRepository.findByIdAndDeletedIsNull(1L)).willReturn(Optional.of(crew));
+            given(reviewRepository.findReviewsByCrewId(1L, pageable)).willReturn(reviewPage);
+
+            // when
+            Page<CrewReviewResponse> result = reviewService.getCrewReviews(1L, pageable);
+
+            // then
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).sessionName()).isEqualTo("테스트 세션");
+            assertThat(result.getContent().get(0).description()).isEqualTo("좋았습니다!");
+        }
+
+        @Test
+        @DisplayName("성공 - 리뷰 없음")
+        void success_noReviews() {
+            // given
+            PageRequest pageable = PageRequest.of(0, 10);
+            Page<CrewReviewResponse> emptyPage = new PageImpl<>(
+                List.of(), pageable, 0
+            );
+
+            given(crewRepository.findByIdAndDeletedIsNull(1L)).willReturn(Optional.of(crew));
+            given(reviewRepository.findReviewsByCrewId(1L, pageable)).willReturn(emptyPage);
+
+            // when
+            Page<CrewReviewResponse> result = reviewService.getCrewReviews(1L, pageable);
+
+            // then
+            assertThat(result.getTotalElements()).isEqualTo(0);
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("실패 - 크루 없음")
+        void fail_crewNotFound() {
+            // given
+            PageRequest pageable = PageRequest.of(0, 10);
+            given(crewRepository.findByIdAndDeletedIsNull(999L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> reviewService.getCrewReviews(999L, pageable))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CREW_NOT_FOUND);
         }
     }
 }

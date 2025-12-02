@@ -14,6 +14,7 @@ import com.runfit.domain.crew.entity.Membership;
 import com.runfit.domain.crew.repository.CrewRepository;
 import com.runfit.domain.crew.repository.MembershipRepository;
 import com.runfit.domain.session.controller.dto.request.SessionCreateRequest;
+import com.runfit.domain.session.controller.dto.request.SessionUpdateRequest;
 import com.runfit.domain.session.controller.dto.response.SessionDetailResponse;
 import com.runfit.domain.session.controller.dto.response.SessionJoinResponse;
 import com.runfit.domain.session.controller.dto.response.SessionLikeResponse;
@@ -457,6 +458,103 @@ class SessionServiceTest {
             assertThatThrownBy(() -> sessionService.getSessionParticipants(999L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SESSION_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("세션 정보 수정")
+    class UpdateSession {
+
+        private SessionUpdateRequest updateRequest;
+
+        @BeforeEach
+        void setUpUpdateRequest() {
+            updateRequest = new SessionUpdateRequest(
+                "수정된 세션명",
+                "수정된 설명",
+                "https://example.com/new-image.jpg",
+                "새 장소",
+                LocalDateTime.now().plusDays(14),
+                LocalDateTime.now().plusDays(13),
+                SessionLevel.INTERMEDIATE,
+                30,
+                400
+            );
+        }
+
+        @Test
+        @DisplayName("성공 - STAFF 권한")
+        void success_asStaff() {
+            // given
+            given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.findByUserUserIdAndCrewId(1L, 1L)).willReturn(Optional.of(staffMembership));
+            given(sessionParticipantRepository.countBySession(session)).willReturn(5L);
+
+            // when
+            SessionResponse response = sessionService.updateSession(1L, 1L, updateRequest);
+
+            // then
+            assertThat(response.name()).isEqualTo("수정된 세션명");
+            assertThat(response.level()).isEqualTo(SessionLevel.INTERMEDIATE);
+            assertThat(response.maxParticipantCount()).isEqualTo(30);
+            assertThat(response.currentParticipantCount()).isEqualTo(5L);
+        }
+
+        @Test
+        @DisplayName("성공 - LEADER 권한")
+        void success_asLeader() {
+            // given
+            Membership leaderMembership = Membership.createLeader(hostUser, crew);
+            ReflectionTestUtils.setField(leaderMembership, "id", 3L);
+
+            given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.findByUserUserIdAndCrewId(1L, 1L)).willReturn(Optional.of(leaderMembership));
+            given(sessionParticipantRepository.countBySession(session)).willReturn(3L);
+
+            // when
+            SessionResponse response = sessionService.updateSession(1L, 1L, updateRequest);
+
+            // then
+            assertThat(response.name()).isEqualTo("수정된 세션명");
+            assertThat(response.currentParticipantCount()).isEqualTo(3L);
+        }
+
+        @Test
+        @DisplayName("실패 - 권한 없음 (일반 멤버)")
+        void fail_noPermission() {
+            // given
+            given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.findByUserUserIdAndCrewId(2L, 1L)).willReturn(Optional.of(memberMembership));
+
+            // when & then
+            assertThatThrownBy(() -> sessionService.updateSession(2L, 1L, updateRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CREW_ROLE_FORBIDDEN);
+        }
+
+        @Test
+        @DisplayName("실패 - 세션 없음")
+        void fail_sessionNotFound() {
+            // given
+            given(sessionRepository.findByIdAndNotDeleted(999L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sessionService.updateSession(1L, 999L, updateRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SESSION_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("실패 - 멤버십 없음")
+        void fail_membershipNotFound() {
+            // given
+            given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.findByUserUserIdAndCrewId(999L, 1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> sessionService.updateSession(999L, 1L, updateRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBERSHIP_NOT_FOUND);
         }
     }
 }

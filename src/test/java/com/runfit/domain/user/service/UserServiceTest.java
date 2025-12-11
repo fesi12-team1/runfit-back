@@ -8,6 +8,7 @@ import com.runfit.common.exception.BusinessException;
 import com.runfit.common.exception.ErrorCode;
 import com.runfit.domain.review.controller.dto.response.ReviewResponse;
 import com.runfit.domain.review.service.ReviewService;
+import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.entity.SessionLevel;
 import com.runfit.domain.session.entity.SessionStatus;
 import com.runfit.domain.session.repository.SessionLikeRepository;
@@ -61,12 +62,14 @@ class UserServiceTest {
 
             LikedSessionResponse likedSession1 = new LikedSessionResponse(
                 1L, 1L, "한강 야간 러닝", "https://example.com/session1.jpg",
-                "잠실 한강공원", LocalDateTime.now().plusDays(7),
+                "서울", "송파구", new CoordsResponse(37.5145, 127.1017),
+                LocalDateTime.now().plusDays(7),
                 SessionLevel.BEGINNER, SessionStatus.OPEN
             );
             LikedSessionResponse likedSession2 = new LikedSessionResponse(
                 2L, 2L, "북한산 트레일 러닝", "https://example.com/session2.jpg",
-                "북한산 입구", LocalDateTime.now().plusDays(14),
+                "서울", "은평구", new CoordsResponse(37.6584, 126.9747),
+                LocalDateTime.now().plusDays(14),
                 SessionLevel.ADVANCED, SessionStatus.OPEN
             );
 
@@ -116,11 +119,13 @@ class UserServiceTest {
             PageRequest pageable = PageRequest.of(0, 2);
 
             LikedSessionResponse likedSession1 = new LikedSessionResponse(
-                1L, 1L, "세션1", null, "장소1", LocalDateTime.now().plusDays(7),
+                1L, 1L, "세션1", null, "서울", "강남구", new CoordsResponse(37.4979, 127.0276),
+                LocalDateTime.now().plusDays(7),
                 SessionLevel.BEGINNER, SessionStatus.OPEN
             );
             LikedSessionResponse likedSession2 = new LikedSessionResponse(
-                2L, 1L, "세션2", null, "장소2", LocalDateTime.now().plusDays(8),
+                2L, 1L, "세션2", null, "서울", "서초구", new CoordsResponse(37.4837, 127.0324),
+                LocalDateTime.now().plusDays(8),
                 SessionLevel.INTERMEDIATE, SessionStatus.OPEN
             );
 

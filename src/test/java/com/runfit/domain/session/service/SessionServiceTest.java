@@ -13,6 +13,7 @@ import com.runfit.domain.crew.entity.CrewRole;
 import com.runfit.domain.crew.entity.Membership;
 import com.runfit.domain.crew.repository.CrewRepository;
 import com.runfit.domain.crew.repository.MembershipRepository;
+import com.runfit.domain.session.controller.dto.request.Coords;
 import com.runfit.domain.session.controller.dto.request.SessionCreateRequest;
 import com.runfit.domain.session.controller.dto.request.SessionUpdateRequest;
 import com.runfit.domain.session.controller.dto.response.SessionDetailResponse;
@@ -92,7 +93,8 @@ class SessionServiceTest {
         ReflectionTestUtils.setField(memberMembership, "id", 2L);
 
         session = Session.create(
-            crew, hostUser, "테스트 세션", "설명", null, "장소",
+            crew, hostUser, "테스트 세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
             LocalDateTime.now().plusDays(7),
             LocalDateTime.now().plusDays(6),
             SessionLevel.BEGINNER, 390, 20
@@ -109,7 +111,8 @@ class SessionServiceTest {
         void success() {
             // given
             SessionCreateRequest request = new SessionCreateRequest(
-                1L, "한강 야간 러닝", "설명", null, "잠실 한강공원",
+                1L, "한강 야간 러닝", "설명", null,
+                "서울", "송파구", new Coords(37.5145, 127.1017),
                 LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
                 SessionLevel.BEGINNER, 20, 390
             );
@@ -136,7 +139,8 @@ class SessionServiceTest {
         void fail_noPermission() {
             // given
             SessionCreateRequest request = new SessionCreateRequest(
-                1L, "세션", "설명", null, "장소",
+                1L, "세션", "설명", null,
+                "서울", "송파구", new Coords(37.5145, 127.1017),
                 LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
                 SessionLevel.BEGINNER, 20, 390
             );
@@ -155,7 +159,8 @@ class SessionServiceTest {
         void fail_crewNotFound() {
             // given
             SessionCreateRequest request = new SessionCreateRequest(
-                999L, "세션", "설명", null, "장소",
+                999L, "세션", "설명", null,
+                "서울", "송파구", new Coords(37.5145, 127.1017),
                 LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
                 SessionLevel.BEGINNER, 20, 390
             );
@@ -473,7 +478,7 @@ class SessionServiceTest {
                 "수정된 세션명",
                 "수정된 설명",
                 "https://example.com/new-image.jpg",
-                "새 장소",
+                "서울", "강남구", new Coords(37.4979, 127.0276),
                 LocalDateTime.now().plusDays(14),
                 LocalDateTime.now().plusDays(13),
                 SessionLevel.INTERMEDIATE,

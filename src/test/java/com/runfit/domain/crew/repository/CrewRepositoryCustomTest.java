@@ -6,10 +6,14 @@ import com.runfit.domain.crew.controller.dto.request.CrewSearchCondition;
 import com.runfit.domain.crew.controller.dto.response.CrewListResponse;
 import com.runfit.domain.crew.entity.Crew;
 import com.runfit.domain.crew.entity.Membership;
+import com.runfit.domain.session.entity.Session;
+import com.runfit.domain.session.entity.SessionLevel;
+import com.runfit.domain.session.repository.SessionRepository;
 import com.runfit.domain.user.entity.User;
 import com.runfit.domain.user.repository.UserRepository;
 import com.runfit.global.config.AuditConfig;
 import com.runfit.global.config.QueryDslConfig;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,9 @@ class CrewRepositoryCustomTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SessionRepository sessionRepository;
 
     private User user;
 
@@ -170,5 +177,99 @@ class CrewRepositoryCustomTest {
         // then
         assertThat(result.getContent()).isEmpty();
         assertThat(result.hasNext()).isFalse();
+    }
+
+    @Test
+    @DisplayName("이름순 오름차순(A-Z) 정렬 성공")
+    void searchCrews_sortByNameAsc_success() {
+        // given
+        CrewSearchCondition condition = CrewSearchCondition.of(null, null, "nameAsc");
+
+        // when
+        Slice<CrewListResponse> result = crewRepository.searchCrews(condition, PageRequest.of(0, 10));
+
+        // then
+        assertThat(result.getContent()).hasSize(3);
+        // 이름 오름차순 정렬 확인 (유니코드 순서: 부산 < 서울 러닝 < 서울 마라톤)
+        assertThat(result.getContent().get(0).name()).isEqualTo("부산 러닝 크루");
+        assertThat(result.getContent().get(1).name()).isEqualTo("서울 러닝 크루");
+        assertThat(result.getContent().get(2).name()).isEqualTo("서울 마라톤 크루");
+    }
+
+    @Test
+    @DisplayName("이름순 내림차순(Z-A) 정렬 성공")
+    void searchCrews_sortByNameDesc_success() {
+        // given
+        CrewSearchCondition condition = CrewSearchCondition.of(null, null, "nameDesc");
+
+        // when
+        Slice<CrewListResponse> result = crewRepository.searchCrews(condition, PageRequest.of(0, 10));
+
+        // then
+        assertThat(result.getContent()).hasSize(3);
+        // 이름 내림차순 정렬 확인 (유니코드 역순: 서울 마라톤 > 서울 러닝 > 부산)
+        assertThat(result.getContent().get(0).name()).isEqualTo("서울 마라톤 크루");
+        assertThat(result.getContent().get(1).name()).isEqualTo("서울 러닝 크루");
+        assertThat(result.getContent().get(2).name()).isEqualTo("부산 러닝 크루");
+    }
+
+    @Test
+    @DisplayName("최근 세션 순 정렬 성공")
+    void searchCrews_sortByLastSessionDesc_success() {
+        // given
+        String uniqueId = String.valueOf(System.nanoTime());
+        User hostUser = userRepository.save(User.create("host-" + uniqueId + "@test.com", "password", "호스트"));
+
+        // 새 크루 생성 (세션 테스트용)
+        Crew crewWithOldSession = crewRepository.save(Crew.create("오래된 세션 크루", "설명", "서울", null));
+        Crew crewWithNewSession = crewRepository.save(Crew.create("최신 세션 크루", "설명", "서울", null));
+        Crew crewWithNoSession = crewRepository.save(Crew.create("세션 없는 크루", "설명", "서울", null));
+
+        membershipRepository.save(Membership.createLeader(hostUser, crewWithOldSession));
+        membershipRepository.save(Membership.createLeader(hostUser, crewWithNewSession));
+        membershipRepository.save(Membership.createLeader(hostUser, crewWithNoSession));
+
+        // 세션 생성 (sessionAt 시간 다르게)
+        LocalDateTime now = LocalDateTime.now();
+        sessionRepository.save(Session.create(
+            crewWithOldSession, hostUser, "오래된 세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
+            now.minusDays(10), now.minusDays(11), SessionLevel.BEGINNER, 360, 10
+        ));
+        sessionRepository.save(Session.create(
+            crewWithNewSession, hostUser, "최신 세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
+            now.plusDays(5), now.plusDays(4), SessionLevel.BEGINNER, 360, 10
+        ));
+
+        CrewSearchCondition condition = CrewSearchCondition.of(null, "세션", "lastSessionDesc");
+
+        // when
+        Slice<CrewListResponse> result = crewRepository.searchCrews(condition, PageRequest.of(0, 10));
+
+        // then
+        assertThat(result.getContent()).hasSize(3);
+        // 최신 세션이 있는 크루가 먼저, 세션 없는 크루는 마지막
+        assertThat(result.getContent().get(0).name()).isEqualTo("최신 세션 크루");
+        assertThat(result.getContent().get(1).name()).isEqualTo("오래된 세션 크루");
+        assertThat(result.getContent().get(2).name()).isEqualTo("세션 없는 크루");
+    }
+
+    @Test
+    @DisplayName("기본 정렬(createdAtDesc)은 최근 생성 순")
+    void searchCrews_defaultSort_createdAtDesc() {
+        // given
+        CrewSearchCondition condition = CrewSearchCondition.of(null, null, "createdAtDesc");
+
+        // when
+        Slice<CrewListResponse> result = crewRepository.searchCrews(condition, PageRequest.of(0, 10));
+
+        // then
+        assertThat(result.getContent()).hasSize(3);
+        // 최근 생성된 순서로 정렬되었는지 확인
+        for (int i = 0; i < result.getContent().size() - 1; i++) {
+            assertThat(result.getContent().get(i).createdAt())
+                .isAfterOrEqualTo(result.getContent().get(i + 1).createdAt());
+        }
     }
 }

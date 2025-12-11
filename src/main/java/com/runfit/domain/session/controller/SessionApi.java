@@ -12,13 +12,14 @@ import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.controller.dto.response.SessionParticipantsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionResponse;
 import com.runfit.domain.session.entity.SessionLevel;
-import com.runfit.domain.session.entity.SessionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,12 +49,15 @@ public interface SessionApi {
         @AuthenticationPrincipal AuthUser user,
         @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
-        @Parameter(description = "도시 필터") @RequestParam(required = false) String city,
+        @Parameter(description = "도시 필터 (복수 선택 가능, 예: 서울, 경기, 충북)") @RequestParam(required = false) List<String> city,
+        @Parameter(description = "시/군/구 필터 (복수 선택 가능, 예: 강남구, 가평군)") @RequestParam(required = false) List<String> district,
         @Parameter(description = "크루 ID 필터") @RequestParam(required = false) Long crewId,
         @Parameter(description = "난이도 필터 (BEGINNER, INTERMEDIATE, ADVANCED)") @RequestParam(required = false) SessionLevel level,
-        @Parameter(description = "날짜 필터 (yyyy-MM-dd)") @RequestParam(required = false) LocalDate date,
-        @Parameter(description = "상태 필터 (OPEN, CLOSED)") @RequestParam(required = false) SessionStatus status,
-        @Parameter(description = "정렬 (sessionAtAsc, sessionAtDesc, createdAtDesc)") @RequestParam(required = false) String sort
+        @Parameter(description = "시작 날짜 필터 (yyyy-MM-dd, sessionAt 기준)") @RequestParam(required = false) LocalDate dateFrom,
+        @Parameter(description = "종료 날짜 필터 (yyyy-MM-dd, sessionAt 기준)") @RequestParam(required = false) LocalDate dateTo,
+        @Parameter(description = "시작 시간 필터 (HH:mm, sessionAt 기준)") @RequestParam(required = false) LocalTime timeFrom,
+        @Parameter(description = "종료 시간 필터 (HH:mm, sessionAt 기준)") @RequestParam(required = false) LocalTime timeTo,
+        @Parameter(description = "정렬 (createdAtDesc: 최근생성순(기본), sessionAtAsc: 모임시작일순, registerByAsc: 마감임박순)") @RequestParam(required = false) String sort
     );
 
     @Operation(summary = "세션 상세 조회", description = "세션 상세 정보를 조회합니다.")

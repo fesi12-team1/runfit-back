@@ -5,6 +5,7 @@ import static com.runfit.domain.session.entity.QSessionLike.sessionLike;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.user.controller.dto.response.LikedSessionResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,12 @@ public class SessionLikeRepositoryCustomImpl implements SessionLikeRepositoryCus
                 session.crew.id,
                 session.name,
                 session.image,
-                session.location,
+                session.city,
+                session.district,
+                Projections.constructor(CoordsResponse.class,
+                    session.latitude,
+                    session.longitude
+                ),
                 session.sessionAt,
                 session.level,
                 session.status

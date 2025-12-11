@@ -1,7 +1,6 @@
 package com.runfit.domain.session.controller.dto.request;
 
 import com.runfit.domain.session.entity.SessionLevel;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +14,11 @@ public record SessionUpdateRequest(
 
     String image,
 
-    String location,
+    String city,
+
+    String district,
+
+    Coords coords,
 
     @NotNull(message = "세션 시작 일시는 필수입니다.")
     LocalDateTime sessionAt,
@@ -32,4 +35,11 @@ public record SessionUpdateRequest(
 
     Integer pace
 ) {
+    public Double latitude() {
+        return coords != null ? coords.lat() : null;
+    }
+
+    public Double longitude() {
+        return coords != null ? coords.lng() : null;
+    }
 }

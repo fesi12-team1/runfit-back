@@ -13,6 +13,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.session.controller.dto.request.SessionSearchCondition;
+import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.entity.SessionLevel;
 import com.runfit.domain.session.entity.SessionStatus;
@@ -40,7 +41,12 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                 session.hostUser.userId,
                 session.name,
                 session.image,
-                session.location,
+                session.city,
+                session.district,
+                Projections.constructor(CoordsResponse.class,
+                    session.latitude,
+                    session.longitude
+                ),
                 session.sessionAt,
                 session.registerBy,
                 session.level,
@@ -92,7 +98,7 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
     }
 
     private BooleanExpression cityEq(String city) {
-        return StringUtils.hasText(city) ? crew.city.eq(city) : null;
+        return StringUtils.hasText(city) ? session.city.eq(city) : null;
     }
 
     private BooleanExpression crewIdEq(Long crewId) {

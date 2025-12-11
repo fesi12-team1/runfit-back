@@ -18,7 +18,11 @@ public record SessionCreateRequest(
 
     String image,
 
-    String location,
+    String city,
+
+    String district,
+
+    Coords coords,
 
     @NotNull(message = "세션 시작 일시는 필수입니다.")
     @Future(message = "세션 시작 일시는 현재 시각 이후여야 합니다.")
@@ -37,4 +41,11 @@ public record SessionCreateRequest(
 
     Integer pace
 ) {
+    public Double latitude() {
+        return coords != null ? coords.lat() : null;
+    }
+
+    public Double longitude() {
+        return coords != null ? coords.lng() : null;
+    }
 }

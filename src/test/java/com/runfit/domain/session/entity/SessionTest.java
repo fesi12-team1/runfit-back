@@ -31,7 +31,10 @@ class SessionTest {
         String name = "한강 야간 러닝";
         String description = "5km 가볍게 뛰어요.";
         String image = "https://example.com/session.jpg";
-        String location = "잠실 한강공원";
+        String city = "서울";
+        String district = "송파구";
+        Double latitude = 37.5145;
+        Double longitude = 127.1017;
         LocalDateTime sessionAt = LocalDateTime.now().plusDays(7);
         LocalDateTime registerBy = LocalDateTime.now().plusDays(6);
         SessionLevel level = SessionLevel.BEGINNER;
@@ -40,7 +43,8 @@ class SessionTest {
 
         // when
         Session session = Session.create(
-            crew, hostUser, name, description, image, location,
+            crew, hostUser, name, description, image,
+            city, district, latitude, longitude,
             sessionAt, registerBy, level, pace, maxParticipantCount
         );
 
@@ -50,7 +54,10 @@ class SessionTest {
         assertThat(session.getName()).isEqualTo(name);
         assertThat(session.getDescription()).isEqualTo(description);
         assertThat(session.getImage()).isEqualTo(image);
-        assertThat(session.getLocation()).isEqualTo(location);
+        assertThat(session.getCity()).isEqualTo(city);
+        assertThat(session.getDistrict()).isEqualTo(district);
+        assertThat(session.getLatitude()).isEqualTo(latitude);
+        assertThat(session.getLongitude()).isEqualTo(longitude);
         assertThat(session.getSessionAt()).isEqualTo(sessionAt);
         assertThat(session.getRegisterBy()).isEqualTo(registerBy);
         assertThat(session.getLevel()).isEqualTo(level);
@@ -95,7 +102,8 @@ class SessionTest {
     void isRegistrationOpen_true() {
         // given
         Session session = Session.create(
-            crew, hostUser, "세션", "설명", null, "장소",
+            crew, hostUser, "세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
             LocalDateTime.now().plusDays(7),
             LocalDateTime.now().plusDays(6),
             SessionLevel.BEGINNER, 390, 20
@@ -110,7 +118,8 @@ class SessionTest {
     void isRegistrationOpen_false_afterDeadline() {
         // given
         Session session = Session.create(
-            crew, hostUser, "세션", "설명", null, "장소",
+            crew, hostUser, "세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
             LocalDateTime.now().plusDays(7),
             LocalDateTime.now().minusDays(1),
             SessionLevel.BEGINNER, 390, 20
@@ -125,7 +134,8 @@ class SessionTest {
     void isRegistrationOpen_false_closed() {
         // given
         Session session = Session.create(
-            crew, hostUser, "세션", "설명", null, "장소",
+            crew, hostUser, "세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
             LocalDateTime.now().plusDays(7),
             LocalDateTime.now().plusDays(6),
             SessionLevel.BEGINNER, 390, 20
@@ -138,7 +148,8 @@ class SessionTest {
 
     private Session createTestSession() {
         return Session.create(
-            crew, hostUser, "테스트 세션", "설명", null, "장소",
+            crew, hostUser, "테스트 세션", "설명", null,
+            "서울", "송파구", 37.5145, 127.1017,
             LocalDateTime.now().plusDays(7),
             LocalDateTime.now().plusDays(6),
             SessionLevel.BEGINNER, 390, 20

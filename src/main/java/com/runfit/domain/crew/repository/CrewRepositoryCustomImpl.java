@@ -2,10 +2,13 @@ package com.runfit.domain.crew.repository;
 
 import static com.runfit.domain.crew.entity.QCrew.crew;
 import static com.runfit.domain.crew.entity.QMembership.membership;
+import static com.runfit.domain.session.entity.QSession.session;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.crew.controller.dto.request.CrewSearchCondition;
 import com.runfit.domain.crew.controller.dto.response.CrewListResponse;
@@ -75,7 +78,13 @@ public class CrewRepositoryCustomImpl implements CrewRepositoryCustom {
 
         return switch (sort) {
             case "memberCountDesc" -> membership.count().desc();
-            case "createdAtAsc" -> crew.createdAt.asc();
+            case "lastSessionDesc" -> Expressions.asDateTime(
+                JPAExpressions.select(session.sessionAt.max())
+                    .from(session)
+                    .where(session.crew.eq(crew))
+            ).desc().nullsLast();
+            case "nameAsc" -> crew.name.asc();
+            case "nameDesc" -> crew.name.desc();
             default -> crew.createdAt.desc();
         };
     }

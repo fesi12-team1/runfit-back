@@ -50,7 +50,7 @@ public interface CrewApi {
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
         @Parameter(description = "지역 필터") @RequestParam(required = false) String city,
         @Parameter(description = "크루명 검색어") @RequestParam(required = false) String keyword,
-        @Parameter(description = "정렬 (createdAtDesc, memberCountDesc)") @RequestParam(required = false) String sort
+        @Parameter(description = "정렬 (memberCountDesc: 멤버 많은 순, lastSessionDesc: 최근 세션 순, createdAtDesc: 최근 생성 순(기본값), nameAsc: 이름순 A-Z, nameDesc: 이름순 Z-A)") @RequestParam(required = false) String sort
     );
 
     @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.")

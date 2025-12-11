@@ -1,19 +1,35 @@
 package com.runfit.domain.session.controller.dto.request;
 
 import com.runfit.domain.session.entity.SessionLevel;
-import com.runfit.domain.session.entity.SessionStatus;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 public record SessionSearchCondition(
-    String city,
+    List<String> cities,
+    List<String> districts,
     Long crewId,
     SessionLevel level,
-    LocalDate date,
-    SessionStatus status,
+    LocalDate dateFrom,
+    LocalDate dateTo,
+    LocalTime timeFrom,
+    LocalTime timeTo,
     String sort
 ) {
-    public static SessionSearchCondition of(String city, Long crewId, SessionLevel level,
-        LocalDate date, SessionStatus status, String sort) {
-        return new SessionSearchCondition(city, crewId, level, date, status, sort);
+    public static SessionSearchCondition of(
+        List<String> cities,
+        List<String> districts,
+        Long crewId,
+        SessionLevel level,
+        LocalDate dateFrom,
+        LocalDate dateTo,
+        LocalTime timeFrom,
+        LocalTime timeTo,
+        String sort
+    ) {
+        return new SessionSearchCondition(
+            cities, districts, crewId, level,
+            dateFrom, dateTo, timeFrom, timeTo, sort
+        );
     }
 }

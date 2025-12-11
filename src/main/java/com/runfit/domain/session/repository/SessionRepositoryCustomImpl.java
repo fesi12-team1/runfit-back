@@ -16,15 +16,15 @@ import com.runfit.domain.session.controller.dto.request.SessionSearchCondition;
 import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.entity.SessionLevel;
-import com.runfit.domain.session.entity.SessionStatus;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -74,11 +74,12 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
             .join(session.crew, crew)
             .where(
                 isNotDeleted(),
-                cityEq(condition.city()),
+                citiesIn(condition.cities()),
+                districtsIn(condition.districts()),
                 crewIdEq(condition.crewId()),
                 levelEq(condition.level()),
-                dateEq(condition.date()),
-                statusEq(condition.status())
+                sessionAtDateBetween(condition.dateFrom(), condition.dateTo()),
+                sessionAtTimeBetween(condition.timeFrom(), condition.timeTo())
             )
             .orderBy(getOrderSpecifier(condition.sort()))
             .offset(pageable.getOffset())
@@ -97,8 +98,12 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
         return session.deleted.isNull();
     }
 
-    private BooleanExpression cityEq(String city) {
-        return StringUtils.hasText(city) ? session.city.eq(city) : null;
+    private BooleanExpression citiesIn(List<String> cities) {
+        return CollectionUtils.isEmpty(cities) ? null : session.city.in(cities);
+    }
+
+    private BooleanExpression districtsIn(List<String> districts) {
+        return CollectionUtils.isEmpty(districts) ? null : session.district.in(districts);
     }
 
     private BooleanExpression crewIdEq(Long crewId) {
@@ -109,30 +114,47 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
         return level != null ? session.level.eq(level) : null;
     }
 
-    private BooleanExpression dateEq(LocalDate date) {
-        if (date == null) {
+    private BooleanExpression sessionAtDateBetween(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null && endDate == null) {
             return null;
         }
-        return session.sessionAt.between(
-            date.atStartOfDay(),
-            date.plusDays(1).atStartOfDay()
-        );
+        if (startDate != null && endDate != null) {
+            return session.sessionAt.between(
+                startDate.atStartOfDay(),
+                endDate.plusDays(1).atStartOfDay()
+            );
+        }
+        if (startDate != null) {
+            return session.sessionAt.goe(startDate.atStartOfDay());
+        }
+        return session.sessionAt.lt(endDate.plusDays(1).atStartOfDay());
     }
 
-    private BooleanExpression statusEq(SessionStatus status) {
-        return status != null ? session.status.eq(status) : null;
+    private BooleanExpression sessionAtTimeBetween(LocalTime startTime, LocalTime endTime) {
+        if (startTime == null && endTime == null) {
+            return null;
+        }
+
+        var timeExpression = Expressions.timeTemplate(LocalTime.class, "CAST({0} AS time)", session.sessionAt);
+
+        if (startTime != null && endTime != null) {
+            return timeExpression.between(startTime, endTime);
+        }
+        if (startTime != null) {
+            return timeExpression.goe(startTime);
+        }
+        return timeExpression.loe(endTime);
     }
 
     private OrderSpecifier<?> getOrderSpecifier(String sort) {
         if (sort == null) {
-            return session.sessionAt.asc();
+            return session.createdAt.desc();
         }
 
         return switch (sort) {
-            case "sessionAtDesc" -> session.sessionAt.desc();
-            case "createdAtDesc" -> session.createdAt.desc();
-            case "createdAtAsc" -> session.createdAt.asc();
-            default -> session.sessionAt.asc();
+            case "sessionAtAsc" -> session.sessionAt.asc();
+            case "registerByAsc" -> session.registerBy.asc();
+            default -> session.createdAt.desc();
         };
     }
 }

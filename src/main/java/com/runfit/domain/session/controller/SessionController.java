@@ -13,11 +13,12 @@ import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.controller.dto.response.SessionParticipantsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionResponse;
 import com.runfit.domain.session.entity.SessionLevel;
-import com.runfit.domain.session.entity.SessionStatus;
 import com.runfit.domain.session.service.SessionService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -57,14 +58,19 @@ public class SessionController implements SessionApi {
         @AuthenticationPrincipal AuthUser user,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
-        @RequestParam(required = false) String city,
+        @RequestParam(required = false) List<String> city,
+        @RequestParam(required = false) List<String> district,
         @RequestParam(required = false) Long crewId,
         @RequestParam(required = false) SessionLevel level,
-        @RequestParam(required = false) LocalDate date,
-        @RequestParam(required = false) SessionStatus status,
+        @RequestParam(required = false) LocalDate dateFrom,
+        @RequestParam(required = false) LocalDate dateTo,
+        @RequestParam(required = false) LocalTime timeFrom,
+        @RequestParam(required = false) LocalTime timeTo,
         @RequestParam(required = false) String sort
     ) {
-        SessionSearchCondition condition = SessionSearchCondition.of(city, crewId, level, date, status, sort);
+        SessionSearchCondition condition = SessionSearchCondition.of(
+            city, district, crewId, level, dateFrom, dateTo, timeFrom, timeTo, sort
+        );
         Long userId = user != null ? user.userId() : null;
         Slice<SessionListResponse> result = sessionService.searchSessions(condition, userId, PageRequest.of(page, size));
         return ResponseEntity.ok(ResponseWrapper.success(SliceResponse.from(result)));

@@ -22,7 +22,8 @@ public record SessionDetailResponse(
     Integer pace,
     Integer maxParticipantCount,
     Long currentParticipantCount,
-    Boolean liked
+    Boolean liked,
+    LocalDateTime createdAt
 ) {
     public static SessionDetailResponse from(Session session, long currentParticipantCount, boolean liked) {
         return new SessionDetailResponse(
@@ -42,7 +43,8 @@ public record SessionDetailResponse(
             session.getPace(),
             session.getMaxParticipantCount(),
             currentParticipantCount,
-            liked
+            liked,
+            session.getCreatedAt()
         );
     }
 }

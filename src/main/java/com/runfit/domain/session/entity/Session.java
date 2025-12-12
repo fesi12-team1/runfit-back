@@ -139,21 +139,9 @@ public class Session extends SoftDeleteEntity {
         return isOpen() && LocalDateTime.now().isBefore(registerBy);
     }
 
-    public void update(String name, String description, String image,
-        String city, String district, Double latitude, Double longitude,
-        LocalDateTime sessionAt, LocalDateTime registerBy, SessionLevel level,
-        Integer pace, Integer maxParticipantCount) {
+    public void update(String name, String description, String image) {
         this.name = name;
         this.description = description;
         this.image = image;
-        this.city = city;
-        this.district = district;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.sessionAt = sessionAt;
-        this.registerBy = registerBy;
-        this.level = level;
-        this.pace = pace;
-        this.maxParticipantCount = maxParticipantCount;
     }
 }

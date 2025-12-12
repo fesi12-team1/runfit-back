@@ -164,16 +164,7 @@ public class SessionService {
         session.update(
             request.name(),
             request.description(),
-            request.image(),
-            request.city(),
-            request.district(),
-            request.latitude(),
-            request.longitude(),
-            request.sessionAt(),
-            request.registerBy(),
-            request.level(),
-            request.pace(),
-            request.maxParticipantCount()
+            request.image()
         );
 
         long currentParticipantCount = sessionParticipantRepository.countBySession(session);

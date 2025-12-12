@@ -477,13 +477,7 @@ class SessionServiceTest {
             updateRequest = new SessionUpdateRequest(
                 "수정된 세션명",
                 "수정된 설명",
-                "https://example.com/new-image.jpg",
-                "서울", "강남구", new Coords(37.4979, 127.0276),
-                LocalDateTime.now().plusDays(14),
-                LocalDateTime.now().plusDays(13),
-                SessionLevel.INTERMEDIATE,
-                30,
-                400
+                "https://example.com/new-image.jpg"
             );
         }
 
@@ -500,8 +494,6 @@ class SessionServiceTest {
 
             // then
             assertThat(response.name()).isEqualTo("수정된 세션명");
-            assertThat(response.level()).isEqualTo(SessionLevel.INTERMEDIATE);
-            assertThat(response.maxParticipantCount()).isEqualTo(30);
             assertThat(response.currentParticipantCount()).isEqualTo(5L);
         }
 

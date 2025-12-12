@@ -68,7 +68,8 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                                 sessionLike.user.userId.eq(userId)
                             ).exists(),
                         "liked"
-                    ) : Expressions.asBoolean(false)
+                    ) : Expressions.asBoolean(false),
+                session.createdAt
             ))
             .from(session)
             .join(session.crew, crew)
@@ -193,7 +194,8 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                             sessionLike.user.userId.eq(hostUserId)
                         ).exists(),
                     "liked"
-                )
+                ),
+                session.createdAt
             ))
             .from(session)
             .join(session.crew, crew)

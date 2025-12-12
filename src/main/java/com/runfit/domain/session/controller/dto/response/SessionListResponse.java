@@ -20,6 +20,7 @@ public record SessionListResponse(
     Integer pace,
     Integer maxParticipantCount,
     Long currentParticipantCount,
-    Boolean liked
+    Boolean liked,
+    LocalDateTime createdAt
 ) {
 }

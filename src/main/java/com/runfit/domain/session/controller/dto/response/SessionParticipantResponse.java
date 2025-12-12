@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public record SessionParticipantResponse(
     Long userId,
     String name,
-    String image,
+    String profileImage,
     CrewRole role,
     LocalDateTime joinedAt
 ) {

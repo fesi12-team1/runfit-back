@@ -15,6 +15,7 @@ import com.runfit.domain.user.repository.UserRepository;
 import com.runfit.global.config.AuditConfig;
 import com.runfit.global.config.QueryDslConfig;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -441,6 +442,165 @@ class SessionParticipantRepositoryCustomTest {
 
             // then
             assertThat(result.getContent()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("성공 - participants 필드가 빈 리스트로 반환")
+        void success_participantsEmpty() {
+            // given
+            Session session = sessionRepository.save(Session.create(
+                crew, user1, "세션", "설명", null,
+                "서울", "강남구", null, 37.4979, 127.0276,
+                LocalDateTime.now().plusDays(7),
+                LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, 390, 20
+            ));
+
+            // when
+            Slice<SessionListResponse> result = sessionParticipantRepository.findParticipatingSessionsByUserId(
+                user1.getUserId(), null, PageRequest.of(0, 10)
+            );
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).isNotNull();
+            assertThat(result.getContent().get(0).participants()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("세션 ID 목록으로 참여자 조회")
+    class FindParticipantsBySessionIds {
+
+        @Test
+        @DisplayName("성공 - 참여자 조회")
+        void success() {
+            // given
+            Session session = sessionRepository.save(Session.create(
+                crew, hostUser, "세션", "설명", null,
+                "서울", "강남구", null, 37.4979, 127.0276,
+                LocalDateTime.now().plusDays(7),
+                LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, 390, 20
+            ));
+            sessionParticipantRepository.save(SessionParticipant.create(session, user1));
+            sessionParticipantRepository.save(SessionParticipant.create(session, user2));
+
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(
+                List.of(session.getId())
+            );
+
+            // then
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(sp -> sp.getUser().getUserId())
+                .containsExactlyInAnyOrder(user1.getUserId(), user2.getUserId());
+        }
+
+        @Test
+        @DisplayName("성공 - 여러 세션의 참여자 조회")
+        void success_multipleSessions() {
+            // given
+            Session session1 = sessionRepository.save(Session.create(
+                crew, hostUser, "세션1", "설명", null,
+                "서울", "강남구", null, 37.4979, 127.0276,
+                LocalDateTime.now().plusDays(7),
+                LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, 390, 20
+            ));
+            Session session2 = sessionRepository.save(Session.create(
+                crew, hostUser, "세션2", "설명", null,
+                "서울", "송파구", null, 37.5145, 127.1017,
+                LocalDateTime.now().plusDays(5),
+                LocalDateTime.now().plusDays(4),
+                SessionLevel.INTERMEDIATE, 360, 15
+            ));
+
+            sessionParticipantRepository.save(SessionParticipant.create(session1, user1));
+            sessionParticipantRepository.save(SessionParticipant.create(session2, user2));
+
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(
+                List.of(session1.getId(), session2.getId())
+            );
+
+            // then
+            assertThat(result).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("성공 - 빈 세션 ID 목록")
+        void success_emptySessionIds() {
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(
+                List.of()
+            );
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공 - null 세션 ID 목록")
+        void success_nullSessionIds() {
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(null);
+
+            // then
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공 - joinedAt 내림차순 정렬")
+        void success_sortByJoinedAtDesc() {
+            // given
+            Session session = sessionRepository.save(Session.create(
+                crew, hostUser, "세션", "설명", null,
+                "서울", "강남구", null, 37.4979, 127.0276,
+                LocalDateTime.now().plusDays(7),
+                LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, 390, 20
+            ));
+
+            // user1 먼저 참여, user2 나중에 참여
+            SessionParticipant p1 = sessionParticipantRepository.save(SessionParticipant.create(session, user1));
+            // 약간의 지연
+            SessionParticipant p2 = sessionParticipantRepository.save(SessionParticipant.create(session, user2));
+
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(
+                List.of(session.getId())
+            );
+
+            // then
+            assertThat(result).hasSize(2);
+            // joinedAt 내림차순이므로 나중에 참여한 user2가 먼저
+            assertThat(result.get(0).getUser().getUserId()).isEqualTo(user2.getUserId());
+            assertThat(result.get(1).getUser().getUserId()).isEqualTo(user1.getUserId());
+        }
+
+        @Test
+        @DisplayName("성공 - User fetch join 확인")
+        void success_fetchJoinUser() {
+            // given
+            Session session = sessionRepository.save(Session.create(
+                crew, hostUser, "세션", "설명", null,
+                "서울", "강남구", null, 37.4979, 127.0276,
+                LocalDateTime.now().plusDays(7),
+                LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, 390, 20
+            ));
+            sessionParticipantRepository.save(SessionParticipant.create(session, user1));
+
+            // when
+            List<SessionParticipant> result = sessionParticipantRepository.findParticipantsBySessionIds(
+                List.of(session.getId())
+            );
+
+            // then
+            assertThat(result).hasSize(1);
+            // User 정보가 fetch join되어 있어야 함
+            assertThat(result.get(0).getUser().getName()).isEqualTo("사용자1");
         }
     }
 }

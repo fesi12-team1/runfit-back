@@ -455,5 +455,43 @@ class SessionRepositoryCustomTest {
             // 마지막으로 생성된 "성남 야간 러닝"이 첫 번째로 나와야 함
             assertThat(result.getContent().get(0).name()).isEqualTo("성남 야간 러닝");
         }
+
+        @Test
+        @DisplayName("성공 - participants 필드가 빈 리스트로 반환")
+        void findMyHostedSessions_participantsEmpty() {
+            // when
+            Slice<SessionListResponse> result = sessionRepository.findMyHostedSessions(
+                hostUser.getUserId(), PageRequest.of(0, 10)
+            );
+
+            // then
+            assertThat(result.getContent()).isNotEmpty();
+            assertThat(result.getContent().get(0).participants()).isNotNull();
+            assertThat(result.getContent().get(0).participants()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("세션 목록 조회 시 participants 필드")
+    class SessionListWithParticipants {
+
+        @Test
+        @DisplayName("searchSessions - participants 필드가 빈 리스트로 반환")
+        void searchSessions_participantsEmpty() {
+            // given
+            SessionSearchCondition condition = SessionSearchCondition.of(
+                null, null, null, null, null, null, null, null, null
+            );
+
+            // when
+            Slice<SessionListResponse> result = sessionRepository.searchSessions(
+                condition, null, PageRequest.of(0, 10)
+            );
+
+            // then
+            assertThat(result.getContent()).isNotEmpty();
+            assertThat(result.getContent().get(0).participants()).isNotNull();
+            assertThat(result.getContent().get(0).participants()).isEmpty();
+        }
     }
 }

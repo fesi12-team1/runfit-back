@@ -42,7 +42,7 @@ public interface SessionApi {
         @RequestBody SessionCreateRequest request
     );
 
-    @Operation(summary = "세션 목록 조회", description = "세션 목록을 조회합니다. 검색/필터/정렬 지원 (무한스크롤)")
+    @Operation(summary = "세션 목록 조회", description = "세션 목록을 조회합니다. 검색/필터/정렬 지원 (무한스크롤). 각 세션에 최근 등록순 참여자 3명이 포함됩니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공")
     })

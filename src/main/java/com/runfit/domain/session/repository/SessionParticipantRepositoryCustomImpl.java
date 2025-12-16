@@ -8,12 +8,16 @@ import static com.runfit.domain.session.entity.QSessionParticipant.sessionPartic
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
+import com.runfit.domain.session.controller.dto.response.SessionParticipantResponse;
 import com.runfit.domain.session.entity.QSessionParticipant;
+import com.runfit.domain.session.entity.SessionParticipant;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -69,7 +73,8 @@ public class SessionParticipantRepositoryCustomImpl implements SessionParticipan
                         ).exists(),
                     "liked"
                 ),
-                session.createdAt
+                session.createdAt,
+                Expressions.constant(Collections.<SessionParticipantResponse>emptyList())
             ))
             .from(session)
             .join(session.crew, crew)
@@ -112,5 +117,19 @@ public class SessionParticipantRepositoryCustomImpl implements SessionParticipan
             case "COMPLETED" -> session.sessionAt.before(now);
             default -> null;
         };
+    }
+
+    @Override
+    public List<SessionParticipant> findParticipantsBySessionIds(List<Long> sessionIds) {
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return queryFactory
+            .selectFrom(sessionParticipant)
+            .join(sessionParticipant.user).fetchJoin()
+            .where(sessionParticipant.session.id.in(sessionIds))
+            .orderBy(sessionParticipant.joinedAt.desc())
+            .fetch();
     }
 }

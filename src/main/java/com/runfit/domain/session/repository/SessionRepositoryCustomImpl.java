@@ -15,9 +15,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.session.controller.dto.request.SessionSearchCondition;
 import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
+import com.runfit.domain.session.controller.dto.response.SessionParticipantResponse;
 import com.runfit.domain.session.entity.SessionLevel;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -70,7 +72,8 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                             ).exists(),
                         "liked"
                     ) : Expressions.asBoolean(false),
-                session.createdAt
+                session.createdAt,
+                Expressions.constant(Collections.<SessionParticipantResponse>emptyList())
             ))
             .from(session)
             .join(session.crew, crew)
@@ -197,7 +200,8 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                         ).exists(),
                     "liked"
                 ),
-                session.createdAt
+                session.createdAt,
+                Expressions.constant(Collections.<SessionParticipantResponse>emptyList())
             ))
             .from(session)
             .join(session.crew, crew)

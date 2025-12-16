@@ -34,6 +34,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import com.runfit.domain.session.controller.dto.request.SessionSearchCondition;
+import com.runfit.domain.session.controller.dto.response.CoordsResponse;
+import com.runfit.domain.session.controller.dto.response.SessionListResponse;
+import com.runfit.domain.session.controller.dto.response.SessionParticipantResponse;
+import com.runfit.domain.session.entity.SessionStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -602,18 +610,166 @@ class SessionServiceTest {
     class GetMyHostedSessions {
 
         @Test
-        @DisplayName("성공")
-        void success() {
+        @DisplayName("성공 - 빈 결과")
+        void success_empty() {
             // given
             given(sessionRepository.findMyHostedSessions(any(Long.class), any()))
-                .willReturn(new org.springframework.data.domain.SliceImpl<>(List.of()));
+                .willReturn(new SliceImpl<>(List.of()));
 
             // when
-            var result = sessionService.getMyHostedSessions(1L, org.springframework.data.domain.PageRequest.of(0, 10));
+            var result = sessionService.getMyHostedSessions(1L, PageRequest.of(0, 10));
 
             // then
             assertThat(result).isNotNull();
-            verify(sessionRepository).findMyHostedSessions(1L, org.springframework.data.domain.PageRequest.of(0, 10));
+            assertThat(result.getContent()).isEmpty();
+            verify(sessionRepository).findMyHostedSessions(1L, PageRequest.of(0, 10));
+        }
+
+        @Test
+        @DisplayName("성공 - 참여자 목록이 포함됨")
+        void success_withParticipants() {
+            // given
+            PageRequest pageable = PageRequest.of(0, 10);
+            SessionListResponse sessionWithoutParticipants = new SessionListResponse(
+                1L, 1L, 1L, "테스트 세션", null, "서울", "강남구", null,
+                new CoordsResponse(37.5145, 127.1017),
+                LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 5L, false, LocalDateTime.now(),
+                List.of()
+            );
+
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(
+                List.of(sessionWithoutParticipants), pageable, false
+            );
+
+            SessionParticipant participant1 = SessionParticipant.create(session, hostUser);
+            ReflectionTestUtils.setField(participant1, "joinedAt", LocalDateTime.now().minusDays(1));
+
+            given(sessionRepository.findMyHostedSessions(1L, pageable)).willReturn(mockSlice);
+            given(sessionParticipantRepository.findParticipantsBySessionIds(List.of(1L)))
+                .willReturn(List.of(participant1));
+            given(membershipRepository.findByUserUserIdAndCrewId(1L, 1L))
+                .willReturn(Optional.of(staffMembership));
+
+            // when
+            Slice<SessionListResponse> result = sessionService.getMyHostedSessions(1L, pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).hasSize(1);
+            assertThat(result.getContent().get(0).participants().get(0).userId()).isEqualTo(1L);
+            assertThat(result.getContent().get(0).participants().get(0).role()).isEqualTo(CrewRole.STAFF);
+        }
+
+        @Test
+        @DisplayName("성공 - 참여자가 3명 초과시 3명만 반환")
+        void success_limitThreeParticipants() {
+            // given
+            PageRequest pageable = PageRequest.of(0, 10);
+            SessionListResponse sessionWithoutParticipants = new SessionListResponse(
+                1L, 1L, 1L, "테스트 세션", null, "서울", "강남구", null,
+                new CoordsResponse(37.5145, 127.1017),
+                LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 5L, false, LocalDateTime.now(),
+                List.of()
+            );
+
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(
+                List.of(sessionWithoutParticipants), pageable, false
+            );
+
+            User user3 = User.create("user3@test.com", "password", "사용자3");
+            ReflectionTestUtils.setField(user3, "userId", 3L);
+            User user4 = User.create("user4@test.com", "password", "사용자4");
+            ReflectionTestUtils.setField(user4, "userId", 4L);
+            User user5 = User.create("user5@test.com", "password", "사용자5");
+            ReflectionTestUtils.setField(user5, "userId", 5L);
+
+            SessionParticipant p1 = SessionParticipant.create(session, hostUser);
+            ReflectionTestUtils.setField(p1, "joinedAt", LocalDateTime.now().minusDays(1));
+            SessionParticipant p2 = SessionParticipant.create(session, participantUser);
+            ReflectionTestUtils.setField(p2, "joinedAt", LocalDateTime.now().minusDays(2));
+            SessionParticipant p3 = SessionParticipant.create(session, user3);
+            ReflectionTestUtils.setField(p3, "joinedAt", LocalDateTime.now().minusDays(3));
+            SessionParticipant p4 = SessionParticipant.create(session, user4);
+            ReflectionTestUtils.setField(p4, "joinedAt", LocalDateTime.now().minusDays(4));
+
+            given(sessionRepository.findMyHostedSessions(1L, pageable)).willReturn(mockSlice);
+            given(sessionParticipantRepository.findParticipantsBySessionIds(List.of(1L)))
+                .willReturn(List.of(p1, p2, p3, p4));
+            given(membershipRepository.findByUserUserIdAndCrewId(any(), any()))
+                .willReturn(Optional.of(memberMembership));
+
+            // when
+            Slice<SessionListResponse> result = sessionService.getMyHostedSessions(1L, pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).hasSize(3);
+        }
+    }
+
+    @Nested
+    @DisplayName("세션 목록 조회")
+    class SearchSessions {
+
+        @Test
+        @DisplayName("성공 - 빈 결과")
+        void success_empty() {
+            // given
+            SessionSearchCondition condition = SessionSearchCondition.of(
+                null, null, null, null, null, null, null, null, null
+            );
+            PageRequest pageable = PageRequest.of(0, 10);
+
+            given(sessionRepository.searchSessions(condition, 1L, pageable))
+                .willReturn(new SliceImpl<>(List.of(), pageable, false));
+
+            // when
+            Slice<SessionListResponse> result = sessionService.searchSessions(condition, 1L, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("성공 - 참여자 목록 포함")
+        void success_withParticipants() {
+            // given
+            SessionSearchCondition condition = SessionSearchCondition.of(
+                null, null, null, null, null, null, null, null, null
+            );
+            PageRequest pageable = PageRequest.of(0, 10);
+
+            SessionListResponse sessionWithoutParticipants = new SessionListResponse(
+                1L, 1L, 1L, "테스트 세션", null, "서울", "강남구", null,
+                new CoordsResponse(37.5145, 127.1017),
+                LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 5L, false, LocalDateTime.now(),
+                List.of()
+            );
+
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(
+                List.of(sessionWithoutParticipants), pageable, false
+            );
+
+            SessionParticipant participant = SessionParticipant.create(session, hostUser);
+            ReflectionTestUtils.setField(participant, "joinedAt", LocalDateTime.now().minusDays(1));
+
+            given(sessionRepository.searchSessions(condition, 1L, pageable)).willReturn(mockSlice);
+            given(sessionParticipantRepository.findParticipantsBySessionIds(List.of(1L)))
+                .willReturn(List.of(participant));
+            given(membershipRepository.findByUserUserIdAndCrewId(1L, 1L))
+                .willReturn(Optional.of(staffMembership));
+
+            // when
+            Slice<SessionListResponse> result = sessionService.searchSessions(condition, 1L, pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).hasSize(1);
+            assertThat(result.getContent().get(0).participants().get(0).name()).isEqualTo("호스트");
+            assertThat(result.getContent().get(0).participants().get(0).role()).isEqualTo(CrewRole.STAFF);
         }
     }
 }

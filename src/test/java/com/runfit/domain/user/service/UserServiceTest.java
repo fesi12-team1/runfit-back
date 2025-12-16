@@ -535,7 +535,8 @@ class UserServiceTest {
                 1L, 1L, 2L, "한강 야간 러닝", "https://example.com/session1.jpg",
                 "서울", "송파구", null, new CoordsResponse(37.5145, 127.1017),
                 LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
-                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 12L, true, LocalDateTime.now()
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 12L, true, LocalDateTime.now(),
+                List.of()
             );
 
             Slice<SessionListResponse> mockSlice = new SliceImpl<>(
@@ -566,7 +567,8 @@ class UserServiceTest {
                 1L, 1L, 2L, "예정 세션", null, "서울", "강남구", null,
                 new CoordsResponse(37.4979, 127.0276),
                 LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
-                SessionLevel.INTERMEDIATE, SessionStatus.OPEN, 360, 15, 8L, false, LocalDateTime.now()
+                SessionLevel.INTERMEDIATE, SessionStatus.OPEN, 360, 15, 8L, false, LocalDateTime.now(),
+                List.of()
             );
 
             Slice<SessionListResponse> mockSlice = new SliceImpl<>(
@@ -596,7 +598,8 @@ class UserServiceTest {
                 2L, 1L, 2L, "완료 세션", null, "서울", "마포구", null,
                 new CoordsResponse(37.5547, 126.9106),
                 LocalDateTime.now().minusDays(7), LocalDateTime.now().minusDays(8),
-                SessionLevel.ADVANCED, SessionStatus.CLOSED, 330, 10, 10L, true, LocalDateTime.now().minusDays(14)
+                SessionLevel.ADVANCED, SessionStatus.CLOSED, 330, 10, 10L, true, LocalDateTime.now().minusDays(14),
+                List.of()
             );
 
             Slice<SessionListResponse> mockSlice = new SliceImpl<>(

@@ -78,7 +78,7 @@ public interface UserApi {
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size
     );
 
-    @Operation(summary = "내가 만든 세션 목록 조회", description = "로그인한 사용자가 생성한 세션 목록을 조회합니다. (무한스크롤)")
+    @Operation(summary = "내가 만든 세션 목록 조회", description = "로그인한 사용자가 생성한 세션 목록을 조회합니다. (무한스크롤). 각 세션에 최근 등록순 참여자 3명이 포함됩니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공"),
         @ApiResponse(responseCode = "401", description = "인증 필요")
@@ -111,7 +111,7 @@ public interface UserApi {
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size
     );
 
-    @Operation(summary = "내 참여 세션 목록 조회", description = "로그인한 사용자가 참여 신청한 세션 목록을 조회합니다. (무한스크롤)")
+    @Operation(summary = "내 참여 세션 목록 조회", description = "로그인한 사용자가 참여 신청한 세션 목록을 조회합니다. (무한스크롤). 각 세션에 최근 등록순 참여자 3명이 포함됩니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공"),
         @ApiResponse(responseCode = "401", description = "인증 필요")

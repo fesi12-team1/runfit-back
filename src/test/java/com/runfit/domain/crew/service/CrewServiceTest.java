@@ -126,12 +126,14 @@ class CrewServiceTest {
         void success() {
             // given
             given(crewRepository.findByIdAndDeletedIsNull(1L)).willReturn(Optional.of(crew));
+            given(membershipRepository.countByCrewId(1L)).willReturn(5L);
 
             // when
             CrewResponse response = crewService.getCrewDetail(1L);
 
             // then
             assertThat(response.name()).isEqualTo("테스트 크루");
+            assertThat(response.memberCount()).isEqualTo(5L);
         }
 
         @Test
@@ -158,6 +160,7 @@ class CrewServiceTest {
             CrewUpdateRequest request = new CrewUpdateRequest("수정된 이름", "수정된 설명", "부산", null);
             given(crewRepository.findByIdAndDeletedIsNull(1L)).willReturn(Optional.of(crew));
             given(membershipRepository.findByUserUserIdAndCrewId(1L, 1L)).willReturn(Optional.of(leaderMembership));
+            given(membershipRepository.countByCrewId(1L)).willReturn(3L);
 
             // when
             CrewResponse response = crewService.updateCrew(1L, 1L, request);
@@ -165,6 +168,7 @@ class CrewServiceTest {
             // then
             assertThat(response.name()).isEqualTo("수정된 이름");
             assertThat(response.city()).isEqualTo("부산");
+            assertThat(response.memberCount()).isEqualTo(3L);
         }
 
         @Test

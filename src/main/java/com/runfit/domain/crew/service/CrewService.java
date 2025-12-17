@@ -66,7 +66,8 @@ public class CrewService {
     @Transactional(readOnly = true)
     public CrewResponse getCrewDetail(Long crewId) {
         Crew crew = findCrewById(crewId);
-        return CrewResponse.from(crew);
+        long memberCount = membershipRepository.countByCrewId(crewId);
+        return CrewResponse.of(crew, memberCount);
     }
 
     @Transactional
@@ -81,7 +82,8 @@ public class CrewService {
             request.image()
         );
 
-        return CrewResponse.from(crew);
+        long memberCount = membershipRepository.countByCrewId(crewId);
+        return CrewResponse.of(crew, memberCount);
     }
 
     @Transactional

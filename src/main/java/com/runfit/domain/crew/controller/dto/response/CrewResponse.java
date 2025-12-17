@@ -9,16 +9,18 @@ public record CrewResponse(
     String description,
     String city,
     String image,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    Long memberCount
 ) {
-    public static CrewResponse from(Crew crew) {
+    public static CrewResponse of(Crew crew, Long memberCount) {
         return new CrewResponse(
             crew.getId(),
             crew.getName(),
             crew.getDescription(),
             crew.getCity(),
             crew.getImage(),
-            crew.getCreatedAt()
+            crew.getCreatedAt(),
+            memberCount
         );
     }
 }

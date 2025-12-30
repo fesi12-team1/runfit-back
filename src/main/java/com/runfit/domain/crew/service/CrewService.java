@@ -23,10 +23,14 @@ import com.runfit.domain.crew.repository.CrewRepository;
 import com.runfit.domain.crew.repository.MembershipRepository;
 import com.runfit.domain.user.entity.User;
 import com.runfit.domain.user.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +64,8 @@ public class CrewService {
 
     @Transactional(readOnly = true)
     public Slice<CrewListResponse> searchCrews(CrewSearchCondition condition, Pageable pageable) {
-        return crewRepository.searchCrews(condition, pageable);
+        Slice<CrewListResponse> crews = crewRepository.searchCrews(condition, pageable);
+        return enrichWithParticipants(crews, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -240,5 +245,37 @@ public class CrewService {
             case "general", "member" -> CrewRole.MEMBER;
             default -> throw new BusinessException(ErrorCode.BAD_REQUEST);
         };
+    }
+
+    private Slice<CrewListResponse> enrichWithParticipants(Slice<CrewListResponse> crews, Pageable pageable) {
+        if (crews.isEmpty()) {
+            return crews;
+        }
+
+        List<Long> crewIds = crews.getContent().stream()
+            .map(CrewListResponse::id)
+            .toList();
+
+        List<Membership> allMembers = membershipRepository.findMembersByCrewIds(crewIds);
+
+        Map<Long, List<MemberResponse>> membersByCrewId = new HashMap<>();
+        for (Membership m : allMembers) {
+            Long crewId = m.getCrew().getId();
+
+            List<MemberResponse> crewMembers = membersByCrewId
+                .computeIfAbsent(crewId, k -> new ArrayList<>());
+
+            if (crewMembers.size() < 3) {
+                crewMembers.add(MemberResponse.from(m));
+            }
+        }
+
+        List<CrewListResponse> enrichedContent = crews.getContent().stream()
+            .map(crew -> crew.withParticipants(
+                membersByCrewId.getOrDefault(crew.id(), List.of())
+            ))
+            .toList();
+
+        return new SliceImpl<>(enrichedContent, pageable, crews.hasNext());
     }
 }

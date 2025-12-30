@@ -278,6 +278,7 @@ class SessionServiceTest {
             // given
             given(userRepository.findById(2L)).willReturn(Optional.of(participantUser));
             given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.existsByUserUserIdAndCrewId(2L, 1L)).willReturn(true);
             given(sessionParticipantRepository.existsBySessionAndUser(session, participantUser)).willReturn(false);
             given(sessionParticipantRepository.countBySession(session)).willReturn(5L);
             given(sessionParticipantRepository.save(any(SessionParticipant.class))).willReturn(null);
@@ -292,11 +293,26 @@ class SessionServiceTest {
         }
 
         @Test
+        @DisplayName("실패 - 크루 미가입자")
+        void fail_notCrewMember() {
+            // given
+            given(userRepository.findById(2L)).willReturn(Optional.of(participantUser));
+            given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.existsByUserUserIdAndCrewId(2L, 1L)).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> sessionService.joinSession(2L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_CREW_MEMBER);
+        }
+
+        @Test
         @DisplayName("실패 - 이미 참가")
         void fail_alreadyJoined() {
             // given
             given(userRepository.findById(2L)).willReturn(Optional.of(participantUser));
             given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.existsByUserUserIdAndCrewId(2L, 1L)).willReturn(true);
             given(sessionParticipantRepository.existsBySessionAndUser(session, participantUser)).willReturn(true);
 
             // when & then
@@ -311,6 +327,7 @@ class SessionServiceTest {
             // given
             given(userRepository.findById(2L)).willReturn(Optional.of(participantUser));
             given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.existsByUserUserIdAndCrewId(2L, 1L)).willReturn(true);
             given(sessionParticipantRepository.existsBySessionAndUser(session, participantUser)).willReturn(false);
             given(sessionParticipantRepository.countBySession(session)).willReturn(20L);
 
@@ -327,6 +344,7 @@ class SessionServiceTest {
             session.close();
             given(userRepository.findById(2L)).willReturn(Optional.of(participantUser));
             given(sessionRepository.findByIdAndNotDeleted(1L)).willReturn(Optional.of(session));
+            given(membershipRepository.existsByUserUserIdAndCrewId(2L, 1L)).willReturn(true);
 
             // when & then
             assertThatThrownBy(() -> sessionService.joinSession(2L, 1L))

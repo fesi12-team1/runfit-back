@@ -4,12 +4,16 @@ import static com.runfit.domain.crew.entity.QCrew.crew;
 import static com.runfit.domain.crew.entity.QMembership.membership;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.crew.controller.dto.response.CrewListResponse;
+import com.runfit.domain.crew.controller.dto.response.MemberResponse;
 import com.runfit.domain.crew.entity.CrewRole;
+import com.runfit.domain.crew.entity.Membership;
 import com.runfit.domain.crew.entity.QMembership;
 import com.runfit.domain.user.controller.dto.response.MyCrewResponse;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +41,8 @@ public class MembershipRepositoryCustomImpl implements MembershipRepositoryCusto
                 JPAExpressions.select(membershipCount.count())
                     .from(membershipCount)
                     .where(membershipCount.crew.eq(crew)),
-                crew.createdAt
+                crew.createdAt,
+                Expressions.constant(Collections.<MemberResponse>emptyList())
             ))
             .from(membership)
             .join(membership.crew, crew)
@@ -93,5 +98,19 @@ public class MembershipRepositoryCustomImpl implements MembershipRepositoryCusto
         }
 
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    @Override
+    public List<Membership> findMembersByCrewIds(List<Long> crewIds) {
+        if (crewIds == null || crewIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return queryFactory
+            .selectFrom(membership)
+            .join(membership.user).fetchJoin()
+            .where(membership.crew.id.in(crewIds))
+            .orderBy(membership.joinedAt.desc())
+            .fetch();
     }
 }

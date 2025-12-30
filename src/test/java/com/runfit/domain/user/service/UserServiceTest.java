@@ -423,11 +423,11 @@ class UserServiceTest {
 
             CrewListResponse crew1 = new CrewListResponse(
                 1L, "잠실 러닝 크루", "잠실 인근 러닝 모임", "서울특별시",
-                "https://example.com/crew1.jpg", 24, LocalDateTime.now()
+                "https://example.com/crew1.jpg", 24, LocalDateTime.now(), List.of()
             );
             CrewListResponse crew2 = new CrewListResponse(
                 2L, "강남 러닝 크루", "강남 인근 러닝 모임", "서울특별시",
-                "https://example.com/crew2.jpg", 15, LocalDateTime.now()
+                "https://example.com/crew2.jpg", 15, LocalDateTime.now(), List.of()
             );
 
             Slice<CrewListResponse> mockSlice = new SliceImpl<>(

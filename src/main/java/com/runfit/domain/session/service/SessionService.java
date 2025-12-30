@@ -104,6 +104,11 @@ public class SessionService {
         User user = findUserById(userId);
         Session session = findSessionById(sessionId);
 
+        Long crewId = session.getCrew().getId();
+        if (!membershipRepository.existsByUserUserIdAndCrewId(userId, crewId)) {
+            throw new BusinessException(ErrorCode.NOT_CREW_MEMBER);
+        }
+
         if (!session.isRegistrationOpen()) {
             throw new BusinessException(ErrorCode.SESSION_CLOSED);
         }

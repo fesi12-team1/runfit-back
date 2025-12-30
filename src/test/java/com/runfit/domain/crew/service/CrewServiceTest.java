@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import com.runfit.common.exception.BusinessException;
 import com.runfit.common.exception.ErrorCode;
 import com.runfit.domain.crew.controller.dto.request.CrewCreateRequest;
+import com.runfit.domain.crew.controller.dto.request.CrewSearchCondition;
 import com.runfit.domain.crew.controller.dto.request.CrewUpdateRequest;
 import com.runfit.domain.crew.controller.dto.request.LeaderChangeRequest;
 import com.runfit.domain.crew.controller.dto.request.RoleChangeRequest;
@@ -17,6 +18,7 @@ import com.runfit.domain.crew.controller.dto.response.CrewMembersResponse;
 import com.runfit.domain.crew.controller.dto.response.CrewResponse;
 import com.runfit.domain.crew.controller.dto.response.LeaderChangeResponse;
 import com.runfit.domain.crew.controller.dto.response.MemberCountResponse;
+import com.runfit.domain.crew.controller.dto.response.MemberResponse;
 import com.runfit.domain.crew.controller.dto.response.MemberRoleResponse;
 import com.runfit.domain.crew.controller.dto.response.MembershipResponse;
 import com.runfit.domain.crew.controller.dto.response.RoleChangeResponse;
@@ -37,6 +39,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -551,6 +557,87 @@ class CrewServiceTest {
             assertThatThrownBy(() -> crewService.deleteCrew(1L, 999L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CREW_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("크루 목록 조회")
+    class SearchCrews {
+
+        @Test
+        @DisplayName("성공 - participants 포함")
+        void success_withParticipants() {
+            // given
+            Pageable pageable = PageRequest.of(0, 10);
+            CrewSearchCondition condition = CrewSearchCondition.of(null, null, null);
+
+            CrewListResponse crewResponse = new CrewListResponse(
+                1L, "테스트 크루", "설명", "서울", null, 2L, null, List.of()
+            );
+            Slice<CrewListResponse> crewSlice = new SliceImpl<>(List.of(crewResponse), pageable, false);
+
+            given(crewRepository.searchCrews(condition, pageable)).willReturn(crewSlice);
+            given(membershipRepository.findMembersByCrewIds(List.of(1L)))
+                .willReturn(List.of(leaderMembership, memberMembership));
+
+            // when
+            Slice<CrewListResponse> result = crewService.searchCrews(condition, pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("성공 - participants 최대 3명까지만 포함")
+        void success_participantsMaxThree() {
+            // given
+            Pageable pageable = PageRequest.of(0, 10);
+            CrewSearchCondition condition = CrewSearchCondition.of(null, null, null);
+
+            CrewListResponse crewResponse = new CrewListResponse(
+                1L, "테스트 크루", "설명", "서울", null, 5L, null, List.of()
+            );
+            Slice<CrewListResponse> crewSlice = new SliceImpl<>(List.of(crewResponse), pageable, false);
+
+            User user3 = User.create("user3@test.com", "password", "사용자3");
+            ReflectionTestUtils.setField(user3, "userId", 3L);
+            User user4 = User.create("user4@test.com", "password", "사용자4");
+            ReflectionTestUtils.setField(user4, "userId", 4L);
+            User user5 = User.create("user5@test.com", "password", "사용자5");
+            ReflectionTestUtils.setField(user5, "userId", 5L);
+
+            Membership m3 = Membership.createMember(user3, crew);
+            Membership m4 = Membership.createMember(user4, crew);
+            Membership m5 = Membership.createMember(user5, crew);
+
+            given(crewRepository.searchCrews(condition, pageable)).willReturn(crewSlice);
+            given(membershipRepository.findMembersByCrewIds(List.of(1L)))
+                .willReturn(List.of(leaderMembership, memberMembership, m3, m4, m5));
+
+            // when
+            Slice<CrewListResponse> result = crewService.searchCrews(condition, pageable);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).participants()).hasSize(3);
+        }
+
+        @Test
+        @DisplayName("성공 - 빈 결과")
+        void success_emptyResult() {
+            // given
+            Pageable pageable = PageRequest.of(0, 10);
+            CrewSearchCondition condition = CrewSearchCondition.of(null, null, null);
+            Slice<CrewListResponse> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+
+            given(crewRepository.searchCrews(condition, pageable)).willReturn(emptySlice);
+
+            // when
+            Slice<CrewListResponse> result = crewService.searchCrews(condition, pageable);
+
+            // then
+            assertThat(result.getContent()).isEmpty();
         }
     }
 }

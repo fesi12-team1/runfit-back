@@ -41,6 +41,7 @@ public enum ErrorCode {
     SESSION_CLOSED(HttpStatus.BAD_REQUEST, "세션 신청이 마감되었습니다."),
     ALREADY_JOINED_SESSION(HttpStatus.BAD_REQUEST, "이미 세션에 참여한 사용자입니다."),
     NOT_SESSION_PARTICIPANT(HttpStatus.BAD_REQUEST, "세션에 참여하지 않은 사용자입니다."),
+    NOT_CREW_MEMBER(HttpStatus.FORBIDDEN, "크루에 가입한 멤버만 세션에 참여할 수 있습니다."),
     ALREADY_LIKED_SESSION(HttpStatus.BAD_REQUEST, "이미 찜한 세션입니다."),
     SESSION_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜한 세션을 찾을 수 없습니다."),
     SESSION_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "세션을 삭제할 권한이 없습니다."),

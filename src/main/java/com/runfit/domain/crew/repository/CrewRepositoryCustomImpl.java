@@ -12,6 +12,8 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.runfit.domain.crew.controller.dto.request.CrewSearchCondition;
 import com.runfit.domain.crew.controller.dto.response.CrewListResponse;
+import com.runfit.domain.crew.controller.dto.response.MemberResponse;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.CollectionUtils;
@@ -37,7 +39,8 @@ public class CrewRepositoryCustomImpl implements CrewRepositoryCustom {
                 crew.city,
                 crew.image,
                 membership.count(),
-                crew.createdAt
+                crew.createdAt,
+                Expressions.constant(Collections.<MemberResponse>emptyList())
             ))
             .from(crew)
             .leftJoin(membership).on(membership.crew.eq(crew))

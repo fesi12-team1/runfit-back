@@ -13,6 +13,7 @@ import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.controller.dto.response.SessionParticipantsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionResponse;
 import com.runfit.domain.session.entity.SessionLevel;
+import com.runfit.domain.session.entity.SessionStatus;
 import com.runfit.domain.session.service.SessionService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -63,6 +64,7 @@ public class SessionController implements SessionApi {
         @RequestParam(required = false) List<String> district,
         @RequestParam(required = false) Long crewId,
         @RequestParam(required = false) SessionLevel level,
+        @RequestParam(required = false) SessionStatus status,
         @RequestParam(required = false) LocalDate dateFrom,
         @RequestParam(required = false) LocalDate dateTo,
         @RequestParam(required = false) LocalTime timeFrom,
@@ -70,7 +72,7 @@ public class SessionController implements SessionApi {
         @RequestParam(required = false) String sort
     ) {
         SessionSearchCondition condition = SessionSearchCondition.of(
-            city, district, crewId, level, dateFrom, dateTo, timeFrom, timeTo, sort
+            city, district, crewId, level, status, dateFrom, dateTo, timeFrom, timeTo, sort
         );
         Long userId = user != null ? user.userId() : null;
         Slice<SessionListResponse> result = sessionService.searchSessions(condition, userId, PageRequest.of(page, size));

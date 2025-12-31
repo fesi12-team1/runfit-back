@@ -18,6 +18,7 @@ import com.runfit.domain.session.controller.dto.response.CoordsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.controller.dto.response.SessionParticipantResponse;
 import com.runfit.domain.session.entity.SessionLevel;
+import com.runfit.domain.session.entity.SessionStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
@@ -93,6 +94,7 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
                 districtsIn(condition.districts()),
                 crewIdEq(condition.crewId()),
                 levelEq(condition.level()),
+                statusEq(condition.status()),
                 sessionAtDateBetween(condition.dateFrom(), condition.dateTo()),
                 sessionAtTimeBetween(condition.timeFrom(), condition.timeTo())
             )
@@ -127,6 +129,10 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
 
     private BooleanExpression levelEq(SessionLevel level) {
         return level != null ? session.level.eq(level) : null;
+    }
+
+    private BooleanExpression statusEq(SessionStatus status) {
+        return status != null ? session.status.eq(status) : null;
     }
 
     private BooleanExpression sessionAtDateBetween(LocalDate startDate, LocalDate endDate) {

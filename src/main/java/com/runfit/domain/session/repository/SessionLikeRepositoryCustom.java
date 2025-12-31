@@ -1,10 +1,10 @@
 package com.runfit.domain.session.repository;
 
-import com.runfit.domain.user.controller.dto.response.LikedSessionResponse;
+import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 public interface SessionLikeRepositoryCustom {
 
-    Slice<LikedSessionResponse> findLikedSessionsByUserId(Long userId, Pageable pageable);
+    Slice<SessionListResponse> findLikedSessionsByUserId(Long userId, Pageable pageable);
 }

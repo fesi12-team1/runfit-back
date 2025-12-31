@@ -857,7 +857,7 @@ class SessionServiceTest {
         void success_empty() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null
             );
             PageRequest pageable = PageRequest.of(0, 10);
 
@@ -876,7 +876,7 @@ class SessionServiceTest {
         void success_withParticipants() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null
             );
             PageRequest pageable = PageRequest.of(0, 10);
 

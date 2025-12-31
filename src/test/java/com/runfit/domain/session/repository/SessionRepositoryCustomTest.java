@@ -107,7 +107,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_all_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null
             );
 
             // when
@@ -125,7 +125,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_bySingleCity_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                List.of("서울"), null, null, null, null, null, null, null, null
+                List.of("서울"), null, null, null, null, null, null, null, null, null
             );
 
             // when
@@ -143,7 +143,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_byMultipleCities_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                List.of("서울", "경기"), null, null, null, null, null, null, null, null
+                List.of("서울", "경기"), null, null, null, null, null, null, null, null, null
             );
 
             // when
@@ -160,7 +160,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_byDistrict_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, List.of("강남구", "송파구"), null, null, null, null, null, null, null
+                null, List.of("강남구", "송파구"), null, null, null, null, null, null, null, null
             );
 
             // when
@@ -179,7 +179,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_byLevel_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, SessionLevel.BEGINNER, null, null, null, null, null
+                null, null, null, SessionLevel.BEGINNER, null, null, null, null, null, null
             );
 
             // when
@@ -197,7 +197,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_byTimeRange_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null,
+                null, null, null, null, null, null, null,
                 LocalTime.of(19, 0), LocalTime.of(23, 0), null
             );
 
@@ -221,7 +221,7 @@ class SessionRepositoryCustomTest {
             // given
             LocalDate today = LocalDate.now();
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null,
+                null, null, null, null, null,
                 today.plusDays(2), today.plusDays(4),
                 null, null, null
             );
@@ -246,7 +246,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_byCityAndLevel_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                List.of("서울"), null, null, SessionLevel.BEGINNER, null, null, null, null, null
+                List.of("서울"), null, null, SessionLevel.BEGINNER, null, null, null, null, null, null
             );
 
             // when
@@ -270,7 +270,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_sortByCreatedAtDesc_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, "createdAtDesc"
+                null, null, null, null, null, null, null, null, null, "createdAtDesc"
             );
 
             // when
@@ -289,7 +289,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_sortBySessionAtAsc_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, "sessionAtAsc"
+                null, null, null, null, null, null, null, null, null, "sessionAtAsc"
             );
 
             // when
@@ -311,7 +311,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_sortByRegisterByAsc_success() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, "registerByAsc"
+                null, null, null, null, null, null, null, null, null, "registerByAsc"
             );
 
             // when
@@ -338,7 +338,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_pagination_hasNext() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null
             );
 
             // when
@@ -356,7 +356,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_noResult() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                List.of("부산"), null, null, null, null, null, null, null, null
+                List.of("부산"), null, null, null, null, null, null, null, null, null
             );
 
             // when
@@ -480,7 +480,7 @@ class SessionRepositoryCustomTest {
         void searchSessions_participantsEmpty() {
             // given
             SessionSearchCondition condition = SessionSearchCondition.of(
-                null, null, null, null, null, null, null, null, null
+                null, null, null, null, null, null, null, null, null, null
             );
 
             // when

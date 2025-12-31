@@ -24,7 +24,6 @@ import com.runfit.domain.session.service.SessionService;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.crew.entity.Membership;
 import com.runfit.domain.user.controller.dto.request.UserUpdateRequest;
-import com.runfit.domain.user.controller.dto.response.LikedSessionResponse;
 import com.runfit.domain.user.controller.dto.response.MyCrewResponse;
 import com.runfit.domain.user.controller.dto.response.UserProfileResponse;
 import com.runfit.domain.user.controller.dto.response.UserResponse;
@@ -82,20 +81,22 @@ class UserServiceTest {
             Long userId = 1L;
             PageRequest pageable = PageRequest.of(0, 10);
 
-            LikedSessionResponse likedSession1 = new LikedSessionResponse(
-                1L, 1L, "한강 야간 러닝", "https://example.com/session1.jpg",
+            SessionListResponse likedSession1 = new SessionListResponse(
+                1L, 1L, 2L, "한강 야간 러닝", "https://example.com/session1.jpg",
                 "서울", "송파구", null, new CoordsResponse(37.5145, 127.1017),
-                LocalDateTime.now().plusDays(7),
-                SessionLevel.BEGINNER, SessionStatus.OPEN
+                LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 5L, true, LocalDateTime.now(),
+                4.5, List.of()
             );
-            LikedSessionResponse likedSession2 = new LikedSessionResponse(
-                2L, 2L, "북한산 트레일 러닝", "https://example.com/session2.jpg",
+            SessionListResponse likedSession2 = new SessionListResponse(
+                2L, 2L, 3L, "북한산 트레일 러닝", "https://example.com/session2.jpg",
                 "서울", "은평구", null, new CoordsResponse(37.6584, 126.9747),
-                LocalDateTime.now().plusDays(14),
-                SessionLevel.ADVANCED, SessionStatus.OPEN
+                LocalDateTime.now().plusDays(14), LocalDateTime.now().plusDays(13),
+                SessionLevel.ADVANCED, SessionStatus.OPEN, 360, 15, 3L, true, LocalDateTime.now(),
+                4.0, List.of()
             );
 
-            Slice<LikedSessionResponse> mockSlice = new SliceImpl<>(
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(
                 List.of(likedSession1, likedSession2), pageable, false
             );
 
@@ -103,14 +104,15 @@ class UserServiceTest {
                 .willReturn(mockSlice);
 
             // when
-            Slice<LikedSessionResponse> result = userService.getMyLikedSessions(userId, pageable);
+            Slice<SessionListResponse> result = userService.getMyLikedSessions(userId, pageable);
 
             // then
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.hasNext()).isFalse();
-            assertThat(result.getContent().get(0).sessionId()).isEqualTo(1L);
+            assertThat(result.getContent().get(0).id()).isEqualTo(1L);
             assertThat(result.getContent().get(0).name()).isEqualTo("한강 야간 러닝");
-            assertThat(result.getContent().get(1).sessionId()).isEqualTo(2L);
+            assertThat(result.getContent().get(0).liked()).isTrue();
+            assertThat(result.getContent().get(1).id()).isEqualTo(2L);
         }
 
         @Test
@@ -120,13 +122,13 @@ class UserServiceTest {
             Long userId = 1L;
             PageRequest pageable = PageRequest.of(0, 10);
 
-            Slice<LikedSessionResponse> mockSlice = new SliceImpl<>(List.of(), pageable, false);
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(List.of(), pageable, false);
 
             given(sessionLikeRepository.findLikedSessionsByUserId(userId, pageable))
                 .willReturn(mockSlice);
 
             // when
-            Slice<LikedSessionResponse> result = userService.getMyLikedSessions(userId, pageable);
+            Slice<SessionListResponse> result = userService.getMyLikedSessions(userId, pageable);
 
             // then
             assertThat(result.getContent()).isEmpty();
@@ -140,18 +142,20 @@ class UserServiceTest {
             Long userId = 1L;
             PageRequest pageable = PageRequest.of(0, 2);
 
-            LikedSessionResponse likedSession1 = new LikedSessionResponse(
-                1L, 1L, "세션1", null, "서울", "강남구", null, new CoordsResponse(37.4979, 127.0276),
-                LocalDateTime.now().plusDays(7),
-                SessionLevel.BEGINNER, SessionStatus.OPEN
+            SessionListResponse likedSession1 = new SessionListResponse(
+                1L, 1L, 2L, "세션1", null, "서울", "강남구", null, new CoordsResponse(37.4979, 127.0276),
+                LocalDateTime.now().plusDays(7), LocalDateTime.now().plusDays(6),
+                SessionLevel.BEGINNER, SessionStatus.OPEN, 390, 20, 5L, true, LocalDateTime.now(),
+                null, List.of()
             );
-            LikedSessionResponse likedSession2 = new LikedSessionResponse(
-                2L, 1L, "세션2", null, "서울", "서초구", null, new CoordsResponse(37.4837, 127.0324),
-                LocalDateTime.now().plusDays(8),
-                SessionLevel.INTERMEDIATE, SessionStatus.OPEN
+            SessionListResponse likedSession2 = new SessionListResponse(
+                2L, 1L, 3L, "세션2", null, "서울", "서초구", null, new CoordsResponse(37.4837, 127.0324),
+                LocalDateTime.now().plusDays(8), LocalDateTime.now().plusDays(7),
+                SessionLevel.INTERMEDIATE, SessionStatus.OPEN, 360, 15, 3L, true, LocalDateTime.now(),
+                null, List.of()
             );
 
-            Slice<LikedSessionResponse> mockSlice = new SliceImpl<>(
+            Slice<SessionListResponse> mockSlice = new SliceImpl<>(
                 List.of(likedSession1, likedSession2), pageable, true
             );
 
@@ -159,7 +163,7 @@ class UserServiceTest {
                 .willReturn(mockSlice);
 
             // when
-            Slice<LikedSessionResponse> result = userService.getMyLikedSessions(userId, pageable);
+            Slice<SessionListResponse> result = userService.getMyLikedSessions(userId, pageable);
 
             // then
             assertThat(result.getContent()).hasSize(2);

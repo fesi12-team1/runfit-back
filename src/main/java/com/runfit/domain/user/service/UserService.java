@@ -16,7 +16,6 @@ import com.runfit.domain.user.controller.dto.response.ParticipatingSessionRespon
 import com.runfit.domain.session.repository.SessionLikeRepository;
 import com.runfit.domain.session.repository.SessionParticipantRepository;
 import com.runfit.domain.user.controller.dto.request.UserUpdateRequest;
-import com.runfit.domain.user.controller.dto.response.LikedSessionResponse;
 import com.runfit.domain.user.controller.dto.response.MyCrewResponse;
 import com.runfit.domain.user.controller.dto.response.UserProfileResponse;
 import com.runfit.domain.user.controller.dto.response.UserResponse;
@@ -78,7 +77,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<LikedSessionResponse> getMyLikedSessions(Long userId, Pageable pageable) {
+    public Slice<SessionListResponse> getMyLikedSessions(Long userId, Pageable pageable) {
         return sessionLikeRepository.findLikedSessionsByUserId(userId, pageable);
     }
 

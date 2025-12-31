@@ -9,7 +9,6 @@ import com.runfit.domain.review.controller.dto.response.ReviewResponse;
 import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.user.controller.dto.response.ParticipatingSessionResponse;
 import com.runfit.domain.user.controller.dto.request.UserUpdateRequest;
-import com.runfit.domain.user.controller.dto.response.LikedSessionResponse;
 import com.runfit.domain.user.controller.dto.response.MyCrewResponse;
 import com.runfit.domain.user.controller.dto.response.UserProfileResponse;
 import com.runfit.domain.user.controller.dto.response.UserResponse;
@@ -68,12 +67,12 @@ public interface UserApi {
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "4") int size
     );
 
-    @Operation(summary = "내가 찜한 세션 목록 조회", description = "로그인한 사용자가 찜한 세션 목록을 조회합니다. (무한스크롤)")
+    @Operation(summary = "내가 찜한 세션 목록 조회", description = "로그인한 사용자가 찜한 세션 목록을 조회합니다. (무한스크롤). 각 세션에 최근 등록순 참여자 3명이 포함됩니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "조회 성공"),
         @ApiResponse(responseCode = "401", description = "인증 필요")
     })
-    ResponseEntity<ResponseWrapper<SliceResponse<LikedSessionResponse>>> getMyLikedSessions(
+    ResponseEntity<ResponseWrapper<SliceResponse<SessionListResponse>>> getMyLikedSessions(
         @AuthenticationPrincipal AuthUser user,
         @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "10") int size

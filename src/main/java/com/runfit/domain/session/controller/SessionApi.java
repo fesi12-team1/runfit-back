@@ -12,6 +12,7 @@ import com.runfit.domain.session.controller.dto.response.SessionListResponse;
 import com.runfit.domain.session.controller.dto.response.SessionParticipantsResponse;
 import com.runfit.domain.session.controller.dto.response.SessionResponse;
 import com.runfit.domain.session.entity.SessionLevel;
+import com.runfit.domain.session.entity.SessionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,6 +55,7 @@ public interface SessionApi {
         @Parameter(description = "시/군/구 필터 (복수 선택 가능, 예: 강남구, 가평군)") @RequestParam(required = false) List<String> district,
         @Parameter(description = "크루 ID 필터") @RequestParam(required = false) Long crewId,
         @Parameter(description = "난이도 필터 (BEGINNER, INTERMEDIATE, ADVANCED)") @RequestParam(required = false) SessionLevel level,
+        @Parameter(description = "상태 필터 (OPEN: 모집중, CLOSED: 마감) - 생략 시 전체 조회") @RequestParam(required = false) SessionStatus status,
         @Parameter(description = "시작 날짜 필터 (yyyy-MM-dd, sessionAt 기준)") @RequestParam(required = false) LocalDate dateFrom,
         @Parameter(description = "종료 날짜 필터 (yyyy-MM-dd, sessionAt 기준)") @RequestParam(required = false) LocalDate dateTo,
         @Parameter(description = "시작 시간 필터 (HH:mm, sessionAt 기준)") @RequestParam(required = false) LocalTime timeFrom,
